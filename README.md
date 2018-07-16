@@ -1,4 +1,4 @@
-# Hadoop-MapReduce-Projects
+# Hadoop MapReduce Projects
 Use Hadoop MapReduce framework to implement auto complete, PageRank algorithm, and recommender system
 
 * MapReduce Project: Auto Complete (N-gram model)
