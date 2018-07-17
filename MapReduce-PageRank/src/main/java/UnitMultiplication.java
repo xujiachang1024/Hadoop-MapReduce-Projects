@@ -20,8 +20,19 @@ public class UnitMultiplication {
         @Override
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 
-            //input format: fromPage\t toPage1,toPage2,toPage3
-            //target: build transition matrix unit -> fromPage\t toPage=probability
+            // input format: fromPage\t toPage1,toPage2,toPage3
+            String[] fromTo = value.toString().trim().split("\t");
+            if (fromTo.length < 2 || fromTo[2].trim().equals("")) {
+                return;
+            }
+
+            // target: build transition matrix unit -> fromPage\t toPage=probability
+            String fromPage = fromTo[0];
+            String[] toPages = fromTo[1].split(",");
+            for (String toPage : toPages) {
+                context.write(new Text(fromPage), new Text(toPage + "=" + (double)1/toPages.length));
+            }
+
         }
     }
 
@@ -30,20 +41,45 @@ public class UnitMultiplication {
         @Override
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 
-            //input format: Page\t PageRank
-            //target: write to reducer
+            //input format: page\t pageRank
+            String[] pageRank = value.toString().trim().split("\t");
+
+            //target: <page, pageRank>
+            context.write(new Text(pageRank[0]), new Text(pageRank[1]));
         }
     }
 
     public static class MultiplicationReducer extends Reducer<Text, Text, Text, Text> {
 
+        float beta;
 
         @Override
-        public void reduce(Text key, Iterable<Text> values, Context context)
-                throws IOException, InterruptedException {
+        public void setup(Context context) {
+            Configuration configuration = context.getConfiguration();
+            beta = configuration.getFloat("beta", 0.2f);
+        }
 
-            //input key = fromPage value=<toPage=probability..., pageRank>
+        @Override
+        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+
+            //input key = fromPage value=<toPage=probability, ..., pageRank>
+            List<String> transactionUnits = new ArrayList<String>();
+            double pageRankUnit = 0;
+            for (Text value : values) {
+                if (value.toString().contains("=")) {
+                    transactionUnits.add(value.toString());
+                } else {
+                    pageRankUnit = Double.parseDouble(value.toString());
+                }
+            }
+
             //target: get the unit multiplication
+            for (String transactionUnit : transactionUnits) {
+                String outputKey = transactionUnit.split("=")[0];
+                double relation = Double.parseDouble(transactionUnit.split("=")[1]);
+                String outputValue = String.valueOf(relation * pageRankUnit * (1-beta));
+                context.write(new Text(outputKey), new Text(outputValue));
+            }
         }
     }
 
@@ -53,7 +89,9 @@ public class UnitMultiplication {
         Job job = Job.getInstance(conf);
         job.setJarByClass(UnitMultiplication.class);
 
-        //how chain two mapper classes?
+        // chain two mapper classes
+        ChainMapper.addMapper(job, TransitionMapper.class, Object.class, Text.class, Text.class, Text.class, conf);
+        ChainMapper.addMapper(job, PRMapper.class, Object.class, Text.class, Text.class, Text.class, conf);
 
         job.setReducerClass(MultiplicationReducer.class);
 
