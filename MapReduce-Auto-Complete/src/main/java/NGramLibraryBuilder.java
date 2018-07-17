@@ -12,9 +12,12 @@ public class NGramLibraryBuilder {
 	public static class NGramMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 
 		int noGram;
+
 		@Override
 		public void setup(Context context) {
-			//how to get n-gram from command line?
+			// get N-Gram confirguation from command line
+            Configuration configuration = context.getConfiguration();
+            noGram = configuration.getInt("noGram", 5);
 		}
 
 		// map method
@@ -25,21 +28,41 @@ public class NGramLibraryBuilder {
 			
 			line = line.trim().toLowerCase();
 
-			//how to remove useless elements?
+			// remove useless elements?
+            line = line.replaceAll("[^a-z]", " ");
 			
-			//how to separate word by space?
+			// split by ' ', '\t' ...
+            String[] words = line.split("\\s+");
+            if (words.length < 2) {
+                return;
+            }
 			
-			//how to build n-gram based on array of words?
+			// build N-Gram based on array of words
+            StringBuilder stringBuilder;
+            for (int i = 0; i < words.length - 1; i++) {
+                stringBuilder = new StringBuilder();
+                stringBuilder.append(words[i]);
+                for (int j = 1; i + j < words.length && j < noGram; j++) {
+                    stringBuilder.append(" ");
+                    stringBuilder.append(words[i + j]);
+                    context.write(new Text(stringBuilder.toString().trim()), new IntWritable(1));
+                }
+            }
 		}
 	}
 
 	public static class NGramReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+
 		// reduce method
 		@Override
-		public void reduce(Text key, Iterable<IntWritable> values, Context context)
-				throws IOException, InterruptedException {
+		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 
-			//how to sum up the total count for each n-gram?
+			// sum up the total count for each N-Gram
+            int sum = 0;
+            for (IntWritable value : values) {
+                sum += value.get();
+            }
+            context.write(key, new IntWritable(sum));
 		}
 	}
 
