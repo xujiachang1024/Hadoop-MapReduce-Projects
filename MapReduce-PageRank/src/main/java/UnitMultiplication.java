@@ -73,7 +73,7 @@ public class UnitMultiplication {
                 }
             }
 
-            //target: get the unit multiplication
+            //target: key=toPage, value=unitMultiplication
             for (String transactionUnit : transactionUnits) {
                 String outputKey = transactionUnit.split("=")[0];
                 double relation = Double.parseDouble(transactionUnit.split("=")[1]);
