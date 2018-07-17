@@ -22,7 +22,7 @@ public class UnitSum {
             String toPage = toPage_unitMultiplication[0];
             double unitMultiplication = Double.parseDouble(toPage_unitMultiplication[1]);
 
-            // target: pass to reducer
+            // target: key=toPage, value=unitMultiplication
             context.write(new Text(toPage), new DoubleWritable(unitMultiplication));
         }
     }
@@ -55,13 +55,13 @@ public class UnitSum {
         @Override
         public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
 
-            // input: key = toPage, value = <unitMultiplication>
+            // input format: key=toPage, value=<unitMultiplication>
             double sum = 0;
             for (DoubleWritable value : values) {
                 sum += value.get();
             }
 
-            // target: sum
+            // target: key=key, value=sum
             DecimalFormat decimalFormat = new DecimalFormat("#.0000");
             sum = Double.valueOf(decimalFormat.format(sum));
             context.write(key, new DoubleWritable(sum));
