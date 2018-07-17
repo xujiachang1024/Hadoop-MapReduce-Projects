@@ -22,18 +22,28 @@ public class Sum {
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-            //pass data to reducer
+            // input format: user:movie\t relation*rating
+            String[] line = value.toString().trim().split("\t");
+
+            // target: key=user:movie, value=relation*rating
+            context.write(new Text(line[0]), new DoubleWritable(Double.parseDouble(line[1])));
         }
     }
 
     public static class SumReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
+
         // reduce method
         @Override
-        public void reduce(Text key, Iterable<DoubleWritable> values, Context context)
-                throws IOException, InterruptedException {
+        public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
 
-            //user:movie relation
-           //calculate the sum
+            // input format: key=user:movie, value=relation*rating
+            double sum = 0;
+            for (DoubleWritable value : values) {
+                sum += value.get();
+            }
+
+            // target: key=user:movie, value=sum
+            context.write(key, new DoubleWritable(sum));
         }
     }
 
