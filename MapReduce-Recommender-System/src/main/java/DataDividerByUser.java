@@ -18,7 +18,7 @@ public class DataDividerByUser {
 		@Override
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-			//input format: user,movie,rating
+			// input format: user,movie,rating
 			String[] user_movie_rating = value.toString().trim().split(",");
 			int user = Integer.parseInt(user_movie_rating[0]);
 			String movie = user_movie_rating[1];
