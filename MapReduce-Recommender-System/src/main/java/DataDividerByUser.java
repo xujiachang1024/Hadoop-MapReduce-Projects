@@ -18,18 +18,31 @@ public class DataDividerByUser {
 		@Override
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-			//input user,movie,rating
-			//divide data by user
+			//input format: user,movie,rating
+			String[] user_movie_rating = value.toString().trim().split(",");
+			int user = Integer.parseInt(user_movie_rating[0]);
+			String movie = user_movie_rating[1];
+			String rating = user_movie_rating[2];
+
+			// target: key=user, value=movie:rating
+            context.write(new IntWritable(user), new Text(movie + ":" + rating));
 		}
 	}
 
 	public static class DataDividerReducer extends Reducer<IntWritable, Text, IntWritable, Text> {
 		// reduce method
 		@Override
-		public void reduce(IntWritable key, Iterable<Text> values, Context context)
-				throws IOException, InterruptedException {
+		public void reduce(IntWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
-			//merge data for one user
+			// input format: value = movie:rating
+            StringBuilder stringBuilder = new StringBuilder();
+            while (values.iterator().hasNext()) {
+                stringBuilder.append(",");
+                stringBuilder.append(values.iterator().next());
+            }
+
+            // target: key=key, value=<movie1:rating, movie2:rating, ...>
+            context.write(key, new Text(stringBuilder.toString().replaceFirst(",", "")));
 		}
 	}
 
