@@ -28,7 +28,7 @@ public class NGramLibraryBuilder {
 			
 			line = line.trim().toLowerCase();
 
-			// remove useless elements?
+			// remove useless elements
             line = line.replaceAll("[^a-z]", " ");
 			
 			// split by ' ', '\t' ...
