@@ -21,14 +21,14 @@ public class UnitMultiplication {
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 
             // input format: fromPage\t toPage1,toPage2,toPage3
-            String[] fromTo = value.toString().trim().split("\t");
-            if (fromTo.length < 2 || fromTo[2].trim().equals("")) {
+            String[] fromPage_toPages = value.toString().trim().split("\t");
+            if (fromPage_toPages.length < 2 || fromPage_toPages[2].trim().equals("")) {
                 return;
             }
 
-            // target: build transition matrix unit -> fromPage\t toPage=probability
-            String fromPage = fromTo[0];
-            String[] toPages = fromTo[1].split(",");
+            // target: build transition matrix unit -> <fromPage, toPage=probability>
+            String fromPage = fromPage_toPages[0];
+            String[] toPages = fromPage_toPages[1].split(",");
             for (String toPage : toPages) {
                 context.write(new Text(fromPage), new Text(toPage + "=" + (double)1/toPages.length));
             }
