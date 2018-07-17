@@ -3,4 +3,4 @@ Use Hadoop MapReduce framework to implement auto complete, PageRank algorithm, a
 
 * MapReduce Project: Auto Complete (N-gram language model)
 * MapReduce Project: PageRank
-* MapReduce Project: Recommender System (collabrative filtering)
+* MapReduce Project: Recommender System (item-based collabrative filtering)
